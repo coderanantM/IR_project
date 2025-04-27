@@ -1,0 +1,29 @@
+/* Ensure the navbar spans the full width of the page */
+.navbar {
+    width: 100vw; /* Use 100% of the viewport width */
+    margin: 0; /* Remove any default margins */
+    padding: 0; /* Remove any default padding */
+    border-radius: 0; /* Remove rounded corners, if any */
+    position: relative; /* Fix the navbar at the top */
+    top: 0; /* Align the navbar to the top */
+    left: 0; /* Align the navbar to the left */
+    z-index: 1030; /* Ensure the navbar is above other elements */
+}
+
+/* Adjust the search bar width */
+.navbar .form-control {
+    width: 50%; /* Adjust as needed */
+}
+
+/* Add some spacing for navbar items */
+.navbar .navbar-nav .nav-item {
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+/* Style for the user location text */
+#user-location {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #ffffff;
+}

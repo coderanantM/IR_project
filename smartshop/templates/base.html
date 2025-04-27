@@ -1,0 +1,235 @@
+{% load static %}
+{% load string_utils %} {# Load custom filter #}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> {# For responsiveness #}
+    <title>{% block title %}SmartShop{% endblock %}</title>
+    {# Use a specific Bootstrap version for consistency #}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}"> {# Your custom styles #}
+</head>
+<body>
+
+    {# Define authentication page URL names #}
+    {% with auth_pages_string='login,logout,sign_up,password_reset,password_reset_done,password_reset_confirm,password_reset_complete,password_reset_options,password_reset_mobile,password_reset_mobile_verify,password_reset_mobile_set_new_password' %}
+    {% with auth_pages=auth_pages_string|split:',' %}
+
+    <!-- ## MERGED NAVBAR (with conditional visibility & spacing adjustments) ## -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark py-2">
+        <div class="container-fluid">
+
+            <!-- Logo (Conditional Link, Spacing After) -->
+            <a class="navbar-brand me-3" {# Spacing AFTER logo #}
+               href="{% if request.resolver_match.url_name in auth_pages %}{% url 'login' %}{% else %}{% url 'dashboard' %}{% endif %}">
+                 {# Ensure 'images/logo.png' path is correct #}
+                 <img src="{% static 'img/logo.png' %}" alt="SmartShop Logo" style="height: 80px; filter: brightness(2);">
+            </a>
+
+            <!-- Mobile Toggler Button -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Collapsible Navbar Content -->
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+
+                <!-- Location & Search Section (Hidden on Auth Pages) -->
+                {% if request.resolver_match.url_name not in auth_pages %}
+                    {# Location Span with Profile Fallback Data #}
+                    <span class="navbar-text text-white order-lg-1 d-none d-lg-inline me-lg-3 mt-2 mt-lg-0" {# Spacing AFTER location #}
+                          id="user-location"
+                          data-profile-location="{{ user.profile.delivery_location|default:'' }}"> {# Adjust 'delivery_location' if your field name differs #}
+                        <i class="bi bi-geo-alt"></i> Loading Location...
+                    </span>
+                    {# Search Form #}
+                    <form class="d-flex mx-auto order-lg-2 my-2 my-lg-0" style="width: 100%; max-width: 500px;" role="search">
+                      <input class="form-control me-1" type="search" placeholder="Search SmartShop" aria-label="Search">
+                      <button class="btn btn-warning" type="submit"><i class="bi bi-search"></i></button>
+                    </form>
+                {% endif %}
+
+                <!-- Right-aligned Navbar Items (Account, Cart, Login/Signup) -->
+                <ul class="navbar-nav ms-auto order-lg-3 d-flex flex-row align-items-center">
+
+                  {% if user.is_authenticated %}
+                      {# --- Logged In User --- #}
+                      {% if request.resolver_match.url_name not in auth_pages %}
+                        {# Logged In & NOT on Auth Page: Show Full Account/Cart #}
+                        <li class="nav-item dropdown me-3"> {# Spacing AFTER account dropdown #}
+                            <a class="nav-link dropdown-toggle text-white" href="#" id="accountDropdownMerged" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                              Hello, {{ user.username }} <br><span class="small">Account & Profile</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="accountDropdownMerged">
+                              <li><a class="dropdown-item" href="{% url 'profile' %}">Your Profile</a></li>
+                              <li><a class="dropdown-item" href="#">Orders</a></li> {# Add link later #}
+                              <li><hr class="dropdown-divider"></li>
+                              <li>
+                                  <form method="post" action="{% url 'logout' %}" style="display: block; padding: 0;">
+                                      {% csrf_token %}
+                                      <button type="submit" class="dropdown-item text-danger">Logout</button>
+                                  </form>
+                              </li>
+                            </ul>
+                        </li>
+                        <li class="nav-item"> {# Cart Link #}
+                            <a class="nav-link text-white" href="#"><i class="bi bi-cart-fill fs-5"></i><span class="small d-none d-md-inline"> Cart</span></a>
+                        </li>
+                      {% else %}
+                        {# Logged In BUT on Auth Page: Show Simple Logout #}
+                        <li class="nav-item">
+                           <form method="post" action="{% url 'logout' %}">
+                               {% csrf_token %}
+                               <button type="submit" class="btn btn-outline-light btn-sm">Logout</button>
+                           </form>
+                        </li>
+                      {% endif %}
+                  {% else %}
+                     {# --- User NOT Authenticated --- #}
+                     {% if request.resolver_match.url_name != 'login' %}
+                        <li class="nav-item me-3"> {# Spacing AFTER Login link #}
+                            <a class="nav-link text-white" href="{% url 'login' %}">Login</a>
+                        </li>
+                     {% endif %}
+                     {% if request.resolver_match.url_name != 'sign_up' %}
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="{% url 'sign_up' %}">Sign Up</a>
+                        </li>
+                     {% endif %}
+                  {% endif %}
+                </ul>
+
+            </div> {# End Collapse #}
+        </div> {# End Container-fluid #}
+    </nav>
+    <!-- ## END MERGED NAVBAR ## -->
+
+    <!-- Category Bar (Hidden on Auth Pages) -->
+    {% if request.resolver_match.url_name not in auth_pages %}
+        <div class="bg-secondary py-2 d-none d-lg-block"> {# Hide on smaller screens if desired #}
+            <div class="container-fluid">
+                <div class="d-flex flex-wrap justify-content-center justify-content-lg-start">
+                    <a href="#" class="text-white me-3 text-decoration-none small">All</a>
+                    <a href="#" class="text-white me-3 text-decoration-none small">Best Quality</a>
+                    <a href="#" class="text-white me-3 text-decoration-none small">Fastest Delivery</a>
+                    <a href="#" class="text-white me-3 text-decoration-none small">Budget Deals</a>
+                    <a href="#" class="text-white me-3 text-decoration-none small">Categories</a>
+                    <a href="#" class="text-white me-3 text-decoration-none small">Today's Deals</a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    {% endwith %} {# End of 'with auth_pages' block #}
+    {% endwith %} {# End of 'with auth_pages_string' block #}
+
+
+    <!-- Main Content Area -->
+    <main class="container my-4"> {# Vertical spacing for content #}
+        {# Display Django Messages #}
+        {% if messages %}
+            <div class="mt-3">
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+            </div>
+        {% endif %}
+        {# Main page content block #}
+        {% block content %}
+            <!-- Page-specific content goes here -->
+        {% endblock %}
+    </main>
+
+    <footer class="mt-5 py-3 bg-light text-center text-muted"> {# Basic Footer #}
+        <small>&copy; {% now "Y" %} SmartShop. All Rights Reserved.</small>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    {# Geolocation Script with Profile Fallback #}
+    <script>
+       function updateLocationDisplay(message) {
+           const locationElement = document.getElementById("user-location");
+           if(locationElement) {
+               console.log("Updating location display:", message); // Debugging
+               locationElement.innerHTML = `<i class="bi bi-geo-alt"></i> ${message}`;
+           }
+        }
+
+        const locationElement = document.getElementById("user-location");
+
+        function displayFallbackLocation() {
+            let fallbackMessage = "Deliver to Your Location"; // Ultimate default
+            if (locationElement) {
+                const profileLocation = locationElement.dataset.profileLocation;
+                // Check if profileLocation exists and is not just whitespace
+                if (profileLocation && profileLocation.trim() !== '') {
+                    fallbackMessage = `Deliver to ${profileLocation.trim()}`; // Use trimmed profile location
+                }
+            }
+            updateLocationDisplay(fallbackMessage);
+        }
+
+       // Only run if the location element exists (i.e., not on auth pages)
+       if (locationElement) {
+           if (navigator.geolocation) {
+               navigator.geolocation.getCurrentPosition(
+                   // Success Callback
+                   function (position) {
+                       const latitude = position.coords.latitude;
+                       const longitude = position.coords.longitude;
+                       console.log("Geolocation success:", latitude, longitude);
+                       // Use Nominatim reverse geocoding API
+                       fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`)
+                           .then(response => response.ok ? response.json() : Promise.reject('Network response was not ok.'))
+                           .then(data => {
+                               console.log("Reverse Geocoding API Response:", data);
+                               const address = data.address || {};
+                               const locationName = address.city || address.town || address.village || address.county || "Your Area";
+                               updateLocationDisplay(`Deliver to ${locationName}`);
+                           })
+                           .catch(error => {
+                               console.error("Error fetching location name:", error);
+                               // Fallback to profile location if reverse geocoding fails
+                               displayFallbackLocation();
+                           });
+                   },
+                   // Error Callback
+                   function (error) {
+                       console.error("Geolocation error:", error);
+                       let displayMessage;
+                       if (error.code === 1) { // PERMISSION_DENIED
+                           displayMessage = "Allow location access?";
+                           // Still display profile location even if permission denied, as a fallback
+                           displayFallbackLocation();
+                           // Override the generic message if profile location was found
+                           const profileLocation = locationElement.dataset.profileLocation;
+                           if (!profileLocation || profileLocation.trim() === '') {
+                              updateLocationDisplay(displayMessage); // Show 'Allow access?' only if no profile location
+                           }
+                       } else if (error.code === 2 || error.code === 3) { // POSITION_UNAVAILABLE or TIMEOUT
+                           // Use Fallback (Profile Location or Default)
+                           displayFallbackLocation();
+                       } else { // Other errors
+                           displayMessage = "Location Error";
+                           updateLocationDisplay(displayMessage); // Show generic error if fallback isn't appropriate
+                       }
+                   },
+                   { timeout: 10000 } // Timeout for geolocation attempt
+               );
+           } else {
+               // Geolocation not supported by browser
+               console.log("Geolocation not supported by browser.");
+               displayFallbackLocation(); // Try showing profile location
+           }
+       } else {
+            console.log("Location element not found (likely auth page).");
+       }
+    </script>
+    {% block extra_js %}{% endblock %} {# For page-specific JS #}
+</body>
+</html>
