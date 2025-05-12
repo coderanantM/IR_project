@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}
+    {% if query %}Search results for "{{ query }}"{% else %}All Products{% endif %}
+{% endblock %}
+{% block content %}
+
+<div class="row">
+  <!-- Sidebar -->
+  <div class="col-md-3">
+    <div>
+      <strong>All Categories</strong>
+      <ul class="list-unstyled">
+        {% for main_cat in categories %}
+          <li>
+            <a href="{% url 'search_results' %}?category={{ main_cat.name|urlencode }}"><strong>{{ main_cat.name }}</strong></a>
+            {% if main_cat.subcategories.all %}
+              <ul>
+                {% for subcat in main_cat.subcategories.all %}
+                  <li>
+                    <a href="{% url 'search_results' %}?category={{ subcat.name|urlencode }}">{{ subcat.name }}</a>
+                  </li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="col-md-9">
+    <h2>
+      {% if query %}
+        Search results for "{{ query }}"
+      {% elif category_name %}
+        Browse: {{ category_name }}
+      {% else %}
+        All Products
+      {% endif %}
+    </h2>
+    <p class="text-muted">{{ count }} product{{ count|pluralize }} found</p>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+      {% for product in products %}
+        <div class="col">
+          <div class="card h-100">
+            <a href="{{ product.product_url|default:'#' }}" target="_blank">
+              {% if product.image_url %}
+                <img src="{{ product.image_url }}" class="card-img-top p-3" alt="{{ product.name }}" style="height: 200px; object-fit: contain;">
+              {% endif %}
+            </a>
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title">{{ product.name|truncatechars:50 }}</h5>
+              <p class="card-text fw-bold">
+                {% if product.price %}₹{{ product.price|floatformat:0 }}{% else %}Not Available{% endif %}
+              </p>
+              <p class="card-text text-success">
+                <small>{% if product.delivery_date %}{{ product.delivery_date }}{% else %}Delivery info N/A{% endif %}</small>
+              </p>
+              <div class="mt-auto">
+                <a href="{{ product.product_url|default:'#' }}" class="btn btn-primary" target="_blank">
+                  View{% if product.source_site and product.source_site != "Unknown" %} on {{ product.source_site }}{% endif %}
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% empty %}
+        <div class="col-12">
+          <p class="text-center my-5">No products found matching your criteria.</p>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+<script>
+    const searchInput = document.querySelector('input[name="q"]');
+    const suggestionsBox = document.createElement('div');
+    suggestionsBox.style.position = 'absolute';
+    suggestionsBox.style.backgroundColor = 'white';
+    suggestionsBox.style.border = '1px solid #ccc';
+    suggestionsBox.style.zIndex = '1000';
+    searchInput.parentNode.appendChild(suggestionsBox);
+
+    searchInput.addEventListener('input', async () => {
+        const query = searchInput.value.trim();
+        if (query.length > 0) {
+            const response = await fetch(`/autocomplete/?q=${query}`);
+            const data = await response.json();
+            suggestionsBox.innerHTML = '';
+            data.suggestions.forEach(suggestion => {
+                const suggestionItem = document.createElement('div');
+                suggestionItem.textContent = suggestion;
+                suggestionItem.style.padding = '5px';
+                suggestionItem.style.cursor = 'pointer';
+                suggestionItem.addEventListener('click', () => {
+                    searchInput.value = suggestion;
+                    suggestionsBox.innerHTML = '';
+                });
+                suggestionsBox.appendChild(suggestionItem);
+            });
+        } else {
+            suggestionsBox.innerHTML = '';
+        }
+    });
+</script>

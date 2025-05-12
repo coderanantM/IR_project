@@ -34,74 +34,75 @@
             </button>
 
             <!-- Collapsible Navbar Content -->
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+<div class="collapse navbar-collapse" id="navbarSupportedContent">
 
-                <!-- Location & Search Section (Hidden on Auth Pages) -->
-                {% if request.resolver_match.url_name not in auth_pages %}
-                    {# Location Span with Profile Fallback Data #}
-                    <span class="navbar-text text-white order-lg-1 d-none d-lg-inline me-lg-3 mt-2 mt-lg-0" {# Spacing AFTER location #}
-                          id="user-location"
-                          data-profile-location="{{ user.profile.delivery_location|default:'' }}"> {# Adjust 'delivery_location' if your field name differs #}
-                        <i class="bi bi-geo-alt"></i> Loading Location...
-                    </span>
-                    {# Search Form #}
-                    <form class="d-flex mx-auto order-lg-2 my-2 my-lg-0" style="width: 100%; max-width: 500px;" role="search">
-                      <input class="form-control me-1" type="search" placeholder="Search SmartShop" aria-label="Search">
-                      <button class="btn btn-warning" type="submit"><i class="bi bi-search"></i></button>
-                    </form>
-                {% endif %}
+    <!-- Location Section (Moved to the Left) -->
+    {% if request.resolver_match.url_name not in auth_pages %}
+        <span class="navbar-text text-white order-lg-0 me-lg-3 mt-2 mt-lg-0" {# Adjusted margins #}
+              id="user-location"
+              data-profile-location="{{ user.profile.delivery_location|default:'' }}"> {# Adjust 'delivery_location' if your field name differs #}
+            <i class="bi bi-geo-alt"></i> Loading Location...
+        </span>
+    {% endif %}
 
-                <!-- Right-aligned Navbar Items (Account, Cart, Login/Signup) -->
-                <ul class="navbar-nav ms-auto order-lg-3 d-flex flex-row align-items-center">
+    <!-- Right-aligned Search Bar -->
+    {% if request.resolver_match.url_name not in auth_pages %}
+        <form class="d-flex ms-auto order-lg-1" style="width: 50%;" action="{% url 'search_results' %}" method="GET">
+            <input class="form-control me-1" type="search" placeholder="Search SmartShop" name="q" aria-label="Search">
+            <button class="btn btn-warning" type="submit"><i class="bi bi-search"></i></button>
+        </form>
+    {% endif %}
 
-                  {% if user.is_authenticated %}
-                      {# --- Logged In User --- #}
-                      {% if request.resolver_match.url_name not in auth_pages %}
-                        {# Logged In & NOT on Auth Page: Show Full Account/Cart #}
-                        <li class="nav-item dropdown me-3"> {# Spacing AFTER account dropdown #}
-                            <a class="nav-link dropdown-toggle text-white" href="#" id="accountDropdownMerged" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                              Hello, {{ user.username }} <br><span class="small">Account & Profile</span>
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="accountDropdownMerged">
-                              <li><a class="dropdown-item" href="{% url 'profile' %}">Your Profile</a></li>
-                              <li><a class="dropdown-item" href="#">Orders</a></li> {# Add link later #}
-                              <li><hr class="dropdown-divider"></li>
-                              <li>
-                                  <form method="post" action="{% url 'logout' %}" style="display: block; padding: 0;">
-                                      {% csrf_token %}
-                                      <button type="submit" class="dropdown-item text-danger">Logout</button>
-                                  </form>
-                              </li>
-                            </ul>
-                        </li>
-                        <li class="nav-item"> {# Cart Link #}
-                            <a class="nav-link text-white" href="#"><i class="bi bi-cart-fill fs-5"></i><span class="small d-none d-md-inline"> Cart</span></a>
-                        </li>
-                      {% else %}
-                        {# Logged In BUT on Auth Page: Show Simple Logout #}
-                        <li class="nav-item">
-                           <form method="post" action="{% url 'logout' %}">
-                               {% csrf_token %}
-                               <button type="submit" class="btn btn-outline-light btn-sm">Logout</button>
-                           </form>
-                        </li>
-                      {% endif %}
-                  {% else %}
-                     {# --- User NOT Authenticated --- #}
-                     {% if request.resolver_match.url_name != 'login' %}
-                        <li class="nav-item me-3"> {# Spacing AFTER Login link #}
-                            <a class="nav-link text-white" href="{% url 'login' %}">Login</a>
-                        </li>
-                     {% endif %}
-                     {% if request.resolver_match.url_name != 'sign_up' %}
-                        <li class="nav-item">
-                            <a class="nav-link text-white" href="{% url 'sign_up' %}">Sign Up</a>
-                        </li>
-                     {% endif %}
-                  {% endif %}
-                </ul>
+    <!-- Right-aligned Navbar Items (Account, Cart, Login/Signup) -->
+    <ul class="navbar-nav ms-auto order-lg-2 d-flex flex-row align-items-center">
+        {% if user.is_authenticated %}
+            {# --- Logged In User --- #}
+            {% if request.resolver_match.url_name not in auth_pages %}
+                {# Logged In & NOT on Auth Page: Show Full Account/Cart #}
+                <li class="nav-item dropdown me-3"> {# Spacing AFTER account dropdown #}
+                    <a class="nav-link dropdown-toggle text-white" href="#" id="accountDropdownMerged" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                      Hello, {{ user.username }} <br><span class="small">Account & Profile</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="accountDropdownMerged">
+                      <li><a class="dropdown-item" href="{% url 'profile' %}">Your Profile</a></li>
+                      <li><a class="dropdown-item" href="#">Orders</a></li> {# Add link later #}
+                      <li><hr class="dropdown-divider"></li>
+                      <li>
+                          <form method="post" action="{% url 'logout' %}" style="display: block; padding: 0;">
+                              {% csrf_token %}
+                              <button type="submit" class="dropdown-item text-danger">Logout</button>
+                          </form>
+                      </li>
+                    </ul>
+                </li>
+                <li class="nav-item"> {# Cart Link #}
+                    <a class="nav-link text-white" href="#"><i class="bi bi-cart-fill fs-5"></i><span class="small d-none d-md-inline"> Cart</span></a>
+                </li>
+            {% else %}
+                {# Logged In BUT on Auth Page: Show Simple Logout #}
+                <li class="nav-item">
+                   <form method="post" action="{% url 'logout' %}">
+                       {% csrf_token %}
+                       <button type="submit" class="btn btn-outline-light btn-sm">Logout</button>
+                   </form>
+                </li>
+            {% endif %}
+        {% else %}
+            {# --- User NOT Authenticated --- #}
+            {% if request.resolver_match.url_name != 'login' %}
+                <li class="nav-item me-3"> {# Spacing AFTER Login link #}
+                    <a class="nav-link text-white" href="{% url 'login' %}">Login</a>
+                </li>
+            {% endif %}
+            {% if request.resolver_match.url_name != 'sign_up' %}
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="{% url 'sign_up' %}">Sign Up</a>
+                </li>
+            {% endif %}
+        {% endif %}
+    </ul>
 
-            </div> {# End Collapse #}
+</div> {# End Collapse #} {# End Collapse #}
         </div> {# End Container-fluid #}
     </nav>
     <!-- ## END MERGED NAVBAR ## -->
