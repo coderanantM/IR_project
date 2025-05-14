@@ -121,29 +121,23 @@ def profile(request):
 
 
         
-@login_required
 @csrf_exempt
+@login_required
 def process_preference_input(request):
     """API endpoint to process text/voice input and return extracted data."""
+    import json
+    from .nlp_utils import extract_preferences_from_text
+
     try:
         body = json.loads(request.body)
         text_input = body.get('text', '')
-
         if not text_input:
             return JsonResponse({'status': 'error', 'message': 'No text provided'}, status=400)
 
         # Extract preferences using NLP utility
         extracted_data = extract_preferences_from_text(text_input)
 
-        # Example extracted data (replace with actual NLP logic)
-        extracted_data = {
-            "preferred_department": "Men",
-            "height_cm": 180,
-            "weight_kg": 75,
-            "age_group": "25-34",
-            "preferred_fit": "slim"
-        }
-
+        # Return the actual extracted data!
         return JsonResponse({'status': 'success', 'data': extracted_data})
 
     except json.JSONDecodeError:

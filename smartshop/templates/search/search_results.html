@@ -30,6 +30,22 @@
           {% endfor %}
         </ul>
       </div>
+
+      <!-- Price Filters -->
+      <div class="mt-4">
+        <strong>Filter by Price</strong>
+        <form method="get" action="{% url 'search_results' %}">
+          <div class="mb-2">
+            <label for="min_price" class="form-label">Min Price</label>
+            <input type="number" name="min_price" id="min_price" class="form-control" value="{{ min_price|default:'' }}" placeholder="0">
+          </div>
+          <div class="mb-2">
+            <label for="max_price" class="form-label">Max Price</label>
+            <input type="number" name="max_price" id="max_price" class="form-control" value="{{ max_price|default:'' }}" placeholder="10000">
+          </div>
+          <button type="submit" class="btn btn-primary w-100">Apply</button>
+        </form>
+      </div>
     </div>
 
     <!-- Main Content -->
@@ -94,7 +110,6 @@
   </div>
 </div>
 {% endblock %}
-
 <script>
     const searchInput = document.querySelector('input[name="q"]');
     const suggestionsBox = document.createElement('div');

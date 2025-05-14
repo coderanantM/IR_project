@@ -86,3 +86,51 @@
 <script src="{% static 'js/profile_autofill.js' %}"></script> 
 
 {% endblock content %}
+<script>
+async function sendVoiceInput(text) {
+    try {
+        const response = await fetch('/process_preference_input/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')  // Ensure CSRF token is included
+            },
+            body: JSON.stringify({ text: text })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('Response:', data);
+        if (data.status === 'success') {
+            // Handle successful response
+            console.log('Extracted Data:', data.data);
+        } else {
+            console.error('Error:', data.message);
+        }
+    } catch (error) {
+        console.error('Network Error:', error);
+    }
+}
+
+fetch('/process_preference_input/', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({text: transcript})
+})
+.then(response => response.json())
+.then(data => {
+    if (data.status === 'success') {
+        const d = data.data;
+        if (d.preferred_department) document.getElementById('id_preferred_department').value = d.preferred_department;
+        if (d.height_cm) document.getElementById('id_height_cm').value = d.height_cm;
+        if (d.weight_kg) document.getElementById('id_weight_kg').value = d.weight_kg;
+        if (d.age_group) document.getElementById('id_age_group').value = d.age_group;
+        if (d.preferred_fit) document.getElementById('id_preferred_fit').value = d.preferred_fit;
+    }
+});
+
+</script>
+
