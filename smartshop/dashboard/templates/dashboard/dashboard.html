@@ -21,85 +21,48 @@
     <!-- Recommendation Sections -->
     <div class="row g-3"> {# g-3 provides gap between columns #}
 
-        <!-- Pick up where you left off -->
-        <div class="col-lg-3 col-md-6 mb-3"> {# Responsive columns with bottom margin #}
-            <div class="card h-100 shadow-sm"> {# Added shadow #}
-                <div class="card-header fw-bold">Pick up where you left off</div>
-                <div class="card-body">
-                    {% for product in recent_products %}
-                        <div class="d-flex align-items-center mb-2 border-bottom pb-2">
-                            <img src="{{ product.image_url|default:'/static/images/placeholder.png' }}" alt="{{ product.name }}" class="me-2" style="width: 60px; height: 60px; object-fit: contain;">
-                            <small class="text-truncate">{{ product.name }}</small> {# Use text-truncate class #}
+        <!-- Pick Up Where You Left Off -->
+        <h2 class="fw-bold">Pick Up Where You Left Off</h2>
+        {% if pick_up_products %}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="row row-cols-1 row-cols-md-3 g-4">
+                    {% for product in pick_up_products %}
+                        <div class="col">
+                            <div class="card h-100">
+                                <img src="{{ product.image_url|default:'/static/images/placeholder.png' }}" class="card-img-top" alt="{{ product.name }}">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ product.name }}</h5>
+                                    <p class="card-text">₹{{ product.price }}</p>
+                                    <a href="{{ product.product_url }}" class="btn btn-primary" target="_blank">View Product</a>
+                                </div>
+                            </div>
                         </div>
-                    {% empty %}
-                        <p class="text-muted small fst-italic">No recent activity.</p> {# Italicized empty message #}
                     {% endfor %}
                 </div>
             </div>
         </div>
+        {% else %}
+        <p class="text-muted">No recent activity found.</p>
+        {% endif %}
 
-        <!-- Continue shopping deals -->
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card h-100 shadow-sm">
-                <div class="card-header fw-bold">Continue shopping deals</div>
-                <div class="card-body">
-                    {% for product in deal_products %}
-                        <div class="d-flex align-items-center mb-2 border-bottom pb-2">
-                             <img src="{{ product.image_url|default:'/static/images/placeholder.png' }}" alt="{{ product.name }}" class="me-2" style="width: 60px; height: 60px; object-fit: contain;">
-                             <div class="flex-grow-1"> {# Allow text to take remaining space #}
-                                <small class="text-truncate d-block">{{ product.name }}</small> {# d-block needed for truncate #}
-                                <span class="badge bg-success">₹{{ product.price }}</span>
-                             </div>
-                        </div>
-                    {% empty %}
-                        <p class="text-muted small fst-italic">No deals found.</p>
+        <!-- Categories to Explore -->
+        <h2 class="fw-bold">Categories to Explore</h2>
+        {% if categories_to_explore %}
+        <div class="row mb-4">
+            <div class="col-12">
+                <ul>
+                    {% for cat in categories_to_explore %}
+                        <li>{{ cat.name }}</li>
                     {% endfor %}
-                </div>
+                </ul>
             </div>
         </div>
-
-        <!-- Categories to explore -->
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card h-100 shadow-sm">
-                <div class="card-header fw-bold">Categories to explore</div>
-                <div class="card-body">
-                    {% for category in categories %}
-                        <div class="d-flex align-items-center mb-2 border-bottom pb-2">
-                            <img src="{{ category.image_url|default:'/static/images/placeholder.png' }}" alt="{{ category.name }}" class="me-2" style="width: 50px; height: 50px; object-fit: contain;">
-                            <small>{{ category.name }}</small>
-                        </div>
-                    {% empty %}
-                        <p class="text-muted small fst-italic">No categories available.</p>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-
-        <!-- Deals related to items you've saved -->
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card h-100 shadow-sm">
-                <div class="card-header fw-bold">Deals related to items you've saved</div>
-                <div class="card-body">
-                    {% for product in recommended_products %}
-                        <div class="d-flex align-items-center mb-2 border-bottom pb-2">
-                             <img src="{{ product.image_url|default:'/static/images/placeholder.png' }}" alt="{{ product.name }}" class="me-2" style="width: 60px; height: 60px; object-fit: contain;">
-                             <div class="flex-grow-1">
-                                <small class="text-truncate d-block">{{ product.name }}</small>
-                                <span class="badge bg-info me-1">₹{{ product.price }}</span>
-                                <span class="badge bg-primary">Fast Delivery</span>
-                             </div>
-                        </div>
-                    {% empty %}
-                        <p class="text-muted small fst-italic">No recommendations yet.</p>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-
-    </div> {# End of Recommendation Row #}
-
+        {% else %}
+        <p class="text-muted">No recommendations available.</p>
+        {% endif %}
+    </div>
 {% endblock %}
-
 
 {% block extra_js %}
     {# Add any JavaScript specific ONLY to the dashboard page if needed #}

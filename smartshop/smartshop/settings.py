@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'users',
     'crispy_forms',
     'crispy_bootstrap5',
+    'orders',
     
 ]
 
@@ -160,6 +161,8 @@ AUTH_USER_MODEL = 'users.CustomUser'
 
 # Redirect to the dashboard after login
 LOGIN_REDIRECT_URL = '/dashboard/'  
+
+LOGIN_URL = '/accounts/login/'
 
 LOGOUT_REDIRECT_URL = 'login'
 

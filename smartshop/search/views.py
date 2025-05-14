@@ -1,7 +1,9 @@
+
 from django.shortcuts import render
 from fuzzywuzzy import fuzz, process
 from products.models import Product, Category
 from django.http import JsonResponse
+from recommendation.models import SearchHistory
 from django.db.models import Q
 
 def search_results(request):
@@ -9,8 +11,13 @@ def search_results(request):
     category_name = request.GET.get('category', '').strip()
     min_price = request.GET.get('min_price', '')
     max_price = request.GET.get('max_price', '')
+    sort_by_delivery = request.GET.get('sort_by_delivery', 'false').lower() == 'true'
 
     products = Product.objects.all()
+    
+    if request.user.is_authenticated and query:
+        SearchHistory.objects.create(user=request.user, query=query)
+    
 
     # --- CATEGORY MATCHING ---
     matched_category = None
@@ -54,6 +61,11 @@ def search_results(request):
             products = products.filter(price__lte=max_price)
         except ValueError:
             pass
+    
+    # --- SORT BY FASTEST DELIVERY ---
+    if sort_by_delivery:
+        products = products.order_by('delivery_date')
+
 
     categories = Category.objects.filter(parent__isnull=True).prefetch_related('subcategories')
 
@@ -66,7 +78,12 @@ def search_results(request):
         'max_price': max_price,
         'count': products.count()
     }
+    
+    
+    
     return render(request, 'search/search_results.html', context)
+
+    
 
 def autocomplete(request):
     query = request.GET.get('q', '').strip()
